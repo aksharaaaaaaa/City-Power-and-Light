@@ -20,12 +20,16 @@ using dotenv.net.Utilities;
 
 class Program 
 {
-    static string Token;
-    private const string BaseUrl = "https://orgff19c007.crm11.dynamics.com/.default";
-    static string Scope = "https://orgff19c007.crm11.dynamics.com/api/data/v9.2/";
+    static string Token; // Token for authentication
+    private const string BaseUrl = "https://orgff19c007.crm11.dynamics.com/.default"; // Base URL for API
+    static string Scope = "https://orgff19c007.crm11.dynamics.com/api/data/v9.2/"; // Scope for API
+
+    // Environment variables for tenant ID, secret ID, app ID
     static string TenantID = Environment.GetEnvironmentVariable("tenant_id");
     static string SecretID = Environment.GetEnvironmentVariable("secret_id");
     static string AppID = Environment.GetEnvironmentVariable("app_id");
+
+    // Construct connection string for service client
     static string connectionString = $@"AuthType=ClientSecret;
                         SkipDiscovery=true;url={BaseUrl};
                         Secret={SecretID};
@@ -35,18 +39,25 @@ class Program
 
     static async Task Main(string[] args)
     {
+        // Load environment variables from .env file
         DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { "C:\\Users\\aksha\\source\\repos\\CogCaseOne\\CogCaseOne\\.env" }));
+        
         string userID = GetUserId();
         string email = Environment.GetEnvironmentVariable("email");
         string password = Environment.GetEnvironmentVariable("password");
+
+        // Get access token
         Token = await GetAccessToken(TenantID, AppID, SecretID, email, password, BaseUrl);
         //Console.WriteLine("Token: " + Token);
 
         var httpClient = new HttpClient();
+        // set authorisation header with token
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
 
         try
         {
+            // UNCOMMENT FOLLOWING LINES TO PERFORM VARIOUS CRUD OPERATIONS ON ACCOUNTS/CONTACTS/INCIDENTS TABLES
+
             //CREATE ACCOUNT
             //var accountId = await AccountApiService.CreateAccount(httpClient, "Looney Tunesss Show", "contact@tunesss.com", "123456-7890", Token);
             //Console.WriteLine($"Created Account ID: {accountId}");
@@ -123,8 +134,6 @@ class Program
             //    Console.WriteLine();
             //}
 
-
-
             //UPDATE INCIDENT
             //await IncidentApiService.UpdateIncident(httpClient, "c4ecffbf-35b2-ef11-b8e8-6045bdcf868c", 1, "update@test.com", Token);
             //string retrievedCase = await IncidentApiService.GetIncidentById(httpClient, "c4ecffbf-35b2-ef11-b8e8-6045bdcf868c");
@@ -152,6 +161,8 @@ class Program
         }
 
     }
+    
+    // Method for getting user ID
     static string GetUserId()
     {
         ServiceClient service = new ServiceClient(connectionString);
@@ -161,9 +172,11 @@ class Program
 
         return response.UserId.ToString();
     }
+
+    // Method for getting access token
     public static async Task<string> GetAccessToken(string tenantId, string clientId, string clientSecret, string username, string password, string scope)
     {
-        var url = $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token";
+        var url = $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"; // construct URL
         var client = new HttpClient();
         var payload = new Dictionary<string, string>
         {
@@ -174,13 +187,14 @@ class Program
             { "password", password },
             { "scope", scope }
         };
-        var response = await client.PostAsync(url, new FormUrlEncodedContent(payload));
+        var response = await client.PostAsync(url, new FormUrlEncodedContent(payload)); // send POST request
         response.EnsureSuccessStatusCode();
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-        var tokenResponse = JsonSerializer.Deserialize<AuthResponse>(jsonResponse);
-        return tokenResponse.access_token;
+        var jsonResponse = await response.Content.ReadAsStringAsync(); // read response content
+        var tokenResponse = JsonSerializer.Deserialize<AuthResponse>(jsonResponse); // deserialise response into AuthResponse object
+        return tokenResponse.access_token; // extract access_token from AuthResponse object
     }
 
+    // Method for serialising objects into JSON content - used in update and create methods
     public static StringContent CreateJsonContent(object payload)
     {
         var json = JsonSerializer.Serialize(payload);
