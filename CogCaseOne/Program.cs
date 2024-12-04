@@ -48,13 +48,13 @@ class Program
         try
         {
             //CREATE ACCOUNT
-            //var accountId = await AccountApiService.CreateAccount(httpClient, "Looney Tunesss Show", "contact@tunesss.com", "123456-7890");
+            //var accountId = await AccountApiService.CreateAccount(httpClient, "Looney Tunesss Show", "contact@tunesss.com", "123456-7890", Token);
             //Console.WriteLine($"Created Account ID: {accountId}");
             //var accountId = await AccountApiService.CreateAccount(httpClient, "Test456", "contact@test111.com", "111222-3330", Token);
             //Console.WriteLine($"Created Account ID: {accountId}");
 
             //UPDATE/DELETE ACCOUNTS
-            //await AccountApiService.UpdateAccount(httpClient, "04618639-aab0-ef11-b8e8-6045bdcf868c", "test222@test.com", "444333-2221");
+            //await AccountApiService.UpdateAccount(httpClient, "04618639-aab0-ef11-b8e8-6045bdcf868c", "test222@test.com", "444333-2221", Token);
             //await AccountApiService.DeleteAccount(httpClient, "8a14ffe2-a2b0-ef11-b8e8-6045bdcf868c");
 
             //GET ACCOUNT BY ID
@@ -83,7 +83,7 @@ class Program
             //
 
             //UPDATE/DELETE CONTACT
-            //await UpdateContact(httpClient, "55a0a54b-ceb0-ef11-b8e8-6045bdcf868c", "update@test2.com");
+            //await UpdateContact(httpClient, "55a0a54b-ceb0-ef11-b8e8-6045bdcf868c", "update@test2.com", Token);
             //await DeleteContact(httpClient, "55a0a54b-ceb0-ef11-b8e8-6045bdcf868c");
 
 
@@ -154,7 +154,6 @@ class Program
     }
     static string GetUserId()
     {
-        //ServiceClient implements IOrganizationService interface
         ServiceClient service = new ServiceClient(connectionString);
         var response = (WhoAmIResponse)service.Execute(new WhoAmIRequest());
 

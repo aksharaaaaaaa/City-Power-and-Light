@@ -13,13 +13,15 @@ namespace CogCaseOne.Services
 
     public class AccountApiService
     {
+        // Base URL for API
         static string Scope = "https://orgff19c007.crm11.dynamics.com/api/data/v9.2/";
-        public static async Task<string> GetAccountById(HttpClient httpClient, string accountId)
-        {
-            // Ensure the base URL ends with a slash for proper concatenation
-            var url = $"{Scope}accounts({accountId})"; // Use BaseUrl instead of Scope if it holds the correct API base
 
-            var response = await httpClient.GetAsync(url);
+        // Method for getting account details using specific account ID
+        public static async Task<string> GetAccountById(HttpClient httpClient, string accountId) 
+        {
+            var url = $"{Scope}accounts({accountId})"; // constructs URL to get specific account
+
+            var response = await httpClient.GetAsync(url); // send GET request
 
             if (!response.IsSuccessStatusCode)
             {
@@ -29,8 +31,9 @@ namespace CogCaseOne.Services
                 throw new HttpRequestException($"Failed to retrieve account. Status code: {response.StatusCode}");
             }
 
-            var responseBody = response.Content.ReadAsStringAsync().Result;
-            //added to get non-null only
+            var responseBody = response.Content.ReadAsStringAsync().Result; // read response content
+
+            // Deserialise JSON response to get non-null values only
             var accountData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody);
 
             var nonNullValues = new Dictionary<string, object>();
@@ -41,13 +44,17 @@ namespace CogCaseOne.Services
                     nonNullValues[pair.Key] = pair.Value;
                 }
             }
-            return JsonSerializer.Serialize(nonNullValues, new JsonSerializerOptions { WriteIndented = true });
-            //--return responseBody;
+            return JsonSerializer.Serialize(nonNullValues, new JsonSerializerOptions { WriteIndented = true }); // Serialise non-null values as JSON output
         }
 
-        public static async Task<string> CreateAccount(HttpClient httpClient, string name, string email, string phone, string token)
+        
+        // Method for creating a new account in accounts table
+        // Returns new account's account ID
+        public static async Task<string> CreateAccount(HttpClient httpClient, string name, string email, string phone, string token) 
         {
-            var url = $"{Scope}accounts";
+            var url = $"{Scope}accounts"; // constructs URL for accounts table
+
+            // set details for new account
             var payload = new
             {
                 name = name,
@@ -56,11 +63,11 @@ namespace CogCaseOne.Services
             };
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = CreateJsonContent(payload)
+                Content = Program.CreateJsonContent(payload) // serialise payload into JSON
             };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // Ensure the token is added
-            var response = await httpClient.SendAsync(request);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
+            var response = await httpClient.SendAsync(request); // send POST request
 
             response.EnsureSuccessStatusCode();
 
@@ -68,21 +75,28 @@ namespace CogCaseOne.Services
             return response.Headers.Location.ToString().Split('(')[1].TrimEnd(')');
         }
 
-        public static async Task DeleteAccount(HttpClient httpClient, string accountId)
+        // Method for deleting account using specific account ID
+        public static async Task DeleteAccount(HttpClient httpClient, string accountId) 
         {
-            var url = $"{Scope}accounts({accountId})";
-            var response = await httpClient.DeleteAsync(url);
+            var url = $"{Scope}accounts({accountId})"; // constructs URL for specific account
+            var response = await httpClient.DeleteAsync(url); // sends DELETE request
+
+            // Log details if there's an error
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Error: {response.StatusCode}, Content: {errorContent}");
                 throw new HttpRequestException($"Failed to delete account. Status code: {response.StatusCode}");
             }
-            Console.WriteLine($"Account with ID {accountId} deleted successfully.");
+            Console.WriteLine($"Account with ID {accountId} deleted successfully."); // confirm for user in console
         }
-        public static async Task UpdateAccount(HttpClient httpClient, string accountId, string newEmail, string newPhone)
+
+        // Method for updating account using specific account ID
+        public static async Task UpdateAccount(HttpClient httpClient, string accountId, string newEmail, string newPhone, string token)
         {
-            var url = $"{Scope}accounts({accountId})";
+            var url = $"{Scope}accounts({accountId})"; // constructs URL for specific account
+
+            // set details to update
             var payload = new
             {
                 emailaddress1 = newEmail,
@@ -91,26 +105,29 @@ namespace CogCaseOne.Services
 
             var request = new HttpRequestMessage(HttpMethod.Patch, url)
             {
-                Content = CreateJsonContent(payload)
+                Content = Program.CreateJsonContent(payload) // serialises payload into JSON 
             };
 
-           // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-            var response = await httpClient.SendAsync(request);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
+            var response = await httpClient.SendAsync(request); // send PATCH request
 
+            // Log details if error
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Error: {response.StatusCode}, Content: {errorContent}");
                 throw new HttpRequestException($"Failed to update account. Status code: {response.StatusCode}");
             }
-            Console.WriteLine($"Account with ID {accountId} updated successfully.");
+            Console.WriteLine($"Account with ID {accountId} updated successfully."); // confirm for user in console
         }
 
+        // Method to display all accounts in accounts table
         public static async Task<List<Account>> GetAllAccounts(HttpClient httpClient)
         {
-            var url = $"{Scope}accounts";
-            var response = await httpClient.GetAsync(url);
+            var url = $"{Scope}accounts"; // constructs URL for accounts table
+            var response = await httpClient.GetAsync(url); // send GET request
 
+            // Log details if error
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -118,10 +135,12 @@ namespace CogCaseOne.Services
                 throw new HttpRequestException($"Failed to retrieve accounts. Status code: {response.StatusCode}");
             }
 
-            var responseBody = await response.Content.ReadAsStringAsync();
+            var responseBody = await response.Content.ReadAsStringAsync(); // read response content
             //Console.WriteLine(responseBody);
 
-            var accountResponse = JsonSerializer.Deserialize<AccountResponse>(responseBody);
+            var accountResponse = JsonSerializer.Deserialize<AccountResponse>(responseBody); // deserialise JSON response
+
+            // Check for errors during deserialisation & if accounts exist in table
             if (accountResponse == null)
             {
                 Console.WriteLine("Deserialization returned null.");
@@ -134,30 +153,6 @@ namespace CogCaseOne.Services
             }
 
             return accountResponse.Value;
-        }
-        public static StringContent CreateJsonContent(object payload)
-        {
-            var json = JsonSerializer.Serialize(payload);
-            return new StringContent(json, Encoding.UTF8, "application/json");
-        }
-        public static async Task<string> GetAccessToken(string tenantId, string clientId, string clientSecret, string username, string password, string scope)
-        {
-            var url = $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token";
-            var client = new HttpClient();
-            var payload = new Dictionary<string, string>
-        {
-            { "grant_type", "password" },
-            { "client_id", clientId },
-            { "client_secret", clientSecret },
-            { "username", username },
-            { "password", password },
-            { "scope", scope }
-        };
-            var response = await client.PostAsync(url, new FormUrlEncodedContent(payload));
-            response.EnsureSuccessStatusCode();
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var tokenResponse = JsonSerializer.Deserialize<AuthResponse>(jsonResponse);
-            return tokenResponse.access_token;
         }
     }
 }

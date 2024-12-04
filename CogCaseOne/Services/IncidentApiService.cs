@@ -11,12 +11,14 @@ namespace CogCaseOne.Services
 {
     public class IncidentApiService
     {
+        // Base URL for API
         static string Scope = "https://orgff19c007.crm11.dynamics.com/api/data/v9.2/";
-        static string Token;
+
+        // Method for getting all incidents in cases table
         public static async Task<List<Incident>> GetAllIncidents(HttpClient httpClient)
         {
-            var url = $"{Scope}incidents";
-            var response = await httpClient.GetAsync(url);
+            var url = $"{Scope}incidents"; // construct URL for cases table
+            var response = await httpClient.GetAsync(url); // send GET request
 
             if (!response.IsSuccessStatusCode)
             {
