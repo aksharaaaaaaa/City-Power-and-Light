@@ -25,13 +25,16 @@ namespace CogCaseOne.Models
         [JsonPropertyName("emailaddress1")]
         public string Email { get; set; }
 
+        [JsonPropertyName("firstname")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("lastname")]
+        public string LastName { get; set; }
+
         [JsonPropertyName("fullname")]
         public string FullName { get; set; }
 
-        [JsonPropertyName("company")]
-        public string Company { get; set; }
-
         [JsonPropertyName("contactid")]
-        public string ContactId { get; set; }
+        public Guid ContactId { get; set; }
     }
 }

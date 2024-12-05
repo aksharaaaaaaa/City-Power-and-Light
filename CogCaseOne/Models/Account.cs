@@ -19,5 +19,11 @@ namespace CogCaseOne.Models
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [JsonPropertyName("emailaddress1")]
+        public string Email { get; set; }
+
+        [JsonPropertyName("telephone1")]
+        public string Phone { get; set; }
     }
 }
