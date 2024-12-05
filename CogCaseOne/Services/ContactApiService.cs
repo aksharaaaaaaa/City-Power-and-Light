@@ -13,7 +13,7 @@ namespace CogCaseOne.Services
     {
         // Method for creating new contact in contacts table
         // Returns new contact's contact ID
-        public static async Task<string> CreateContact(HttpClient httpClient, string firstName, string lastName, string email, string companyName, string token)
+        public static async Task<string> CreateContact(HttpClient httpClient, string firstName, string lastName, string email, string token)
         {
             var url = $"{Program.Scope}contacts"; // construct URL for contacts table
 

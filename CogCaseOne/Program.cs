@@ -81,7 +81,7 @@ class Program
 
             // CONTACTS
             // create contact
-            var contactId = await ContactApiService.CreateContact(httpClient, "Test", "Contact", "contact@test.com", "Test111", Token);
+            var contactId = await ContactApiService.CreateContact(httpClient, "Test", "Contact", "contact@test.com", Token);
             Console.WriteLine($"Created new contact ID: {contactId}");
             // get contact details
             string createdContact = await ContactApiService.GetContactById(httpClient, contactId);
