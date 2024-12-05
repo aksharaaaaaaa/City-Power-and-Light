@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CogCaseOne.Models;
-using Newtonsoft.Json.Linq;
 
 namespace CogCaseOne.Services
 {
@@ -47,9 +46,9 @@ namespace CogCaseOne.Services
 
             var response = await httpClient.GetAsync(url); // send GET request
 
+            // Log error details if request is unsuccessful
             if (!response.IsSuccessStatusCode)
             {
-                // Log details if there's an error
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Error: {response.StatusCode}, Content: {errorContent}");
                 throw new HttpRequestException($"Failed to retrieve account. Status code: {response.StatusCode}");
@@ -69,7 +68,7 @@ namespace CogCaseOne.Services
             var url = $"{Program.Scope}accounts"; // constructs URL for accounts table
             var response = await httpClient.GetAsync(url); // send GET request
 
-            // Log details if error
+            // Log error details if request is unsuccessful
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -116,7 +115,7 @@ namespace CogCaseOne.Services
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
             var response = await httpClient.SendAsync(request); // send PATCH request
 
-            // Log details if error
+            // Log error details if request is unsuccessful
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -132,7 +131,7 @@ namespace CogCaseOne.Services
             var url = $"{Program.Scope}accounts({accountId})"; // constructs URL for specific account
             var response = await httpClient.DeleteAsync(url); // sends DELETE request
 
-            // Log details if there's an error
+            // Log error details if request is unsuccessful
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
