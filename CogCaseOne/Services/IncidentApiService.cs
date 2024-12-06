@@ -11,8 +11,17 @@ namespace CogCaseOne.Services
 {
     public class IncidentApiService
     {
-        // Method for creating new incident in cases table
-        // Returns incident ID of newly created incident
+        /// <summary>
+        /// Creates new incident in cases table.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="Title">Title of incident</param>
+        /// <param name="Description">Description of incident</param>
+        /// <param name="customerId">Customer ID (account ID) to link incident to</param>
+        /// <param name="statusCode">Status code of incident</param>
+        /// <param name="token">Authorisation token</param>
+        /// <returns>ID of newly created incident.</returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task<string> CreateIncident(HttpClient httpClient, string Title, string Description, string customerId, int statusCode, string token)
         {
             var url = $"{Program.Scope}incidents"; // construct URL for cases table
@@ -29,7 +38,7 @@ namespace CogCaseOne.Services
 
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = Program.CreateJsonContent(payload) // serialise payload into JSON
+                Content = UtilityHelper.CreateJsonContent(payload) // serialise payload into JSON
             };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
@@ -47,10 +56,16 @@ namespace CogCaseOne.Services
             return response.Headers.Location.ToString().Split('(')[1].TrimEnd(')');
         }
 
-        // Method for getting incident details using specific incident ID
+        /// <summary>
+        /// Retrieves incident details using specific incident ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="incidentId">ID of incident to retrieve</param>
+        /// <returns>Formatted incident details as string.</returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task<string> GetIncidentById(HttpClient httpClient, string incidentId)
         {
-            var url = $"{Program.Scope}incidents({incidentId})"; // construct URL for specific incident
+            var url = $"{Program.Scope}incidents({incidentId})?$expand=customerid_account($select=name)"; // construct URL for specific incident
 
             var response = await httpClient.GetAsync(url); // sends GET request
 
@@ -63,19 +78,24 @@ namespace CogCaseOne.Services
             }
 
             var responseBody = response.Content.ReadAsStringAsync().Result; // read response content
-
             var incident = JsonSerializer.Deserialize<Incident>(responseBody); // deserialise JSON response into Incident object
 
             // use helper method to format information of incident
-            return Program.FormatInfo(incident);
+            return UtilityHelper.FormatInfo(incident);
         }
 
-        // Method for getting all incidents in cases table
+        /// <summary>
+        /// Retrieves all incidents in incidents table.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <returns>List of incidents.</returns>
+        /// <exception cref="HttpRequestException"></exception>
+        /// <exception cref="Exception"></exception>
         public static async Task<List<Incident>> GetAllIncidents(HttpClient httpClient)
         {
-            var url = $"{Program.Scope}incidents"; // construct URL for cases table
+            var url = $"{Program.Scope}incidents?$expand=customerid_account($select=name)"; // construct URL for cases table
             var response = await httpClient.GetAsync(url); // send GET request
-            
+
             // Log error details if request is unsuccessful
             if (!response.IsSuccessStatusCode)
             {
@@ -102,7 +122,16 @@ namespace CogCaseOne.Services
             return incidentResponse.Value;
         }
 
-        // Method for updating incident using specific incident ID
+        /// <summary>
+        /// Updates incident using specific incident ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="incidentId">ID of incident to update</param>
+        /// <param name="statusCode">New status code for incident</param>
+        /// <param name="newEmail">New email address for incident</param>
+        /// <param name="token">Authentication token</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task UpdateIncident(HttpClient httpClient, string incidentId, int statusCode, string newEmail, string token)
         {
             var url = $"{Program.Scope}incidents({incidentId})"; // constructs URL for specific incident
@@ -116,7 +145,7 @@ namespace CogCaseOne.Services
 
             var request = new HttpRequestMessage(HttpMethod.Patch, url)
             {
-                Content = Program.CreateJsonContent(payload) // serialise payload into JSON
+                Content = UtilityHelper.CreateJsonContent(payload) // serialise payload into JSON
             };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
@@ -132,7 +161,13 @@ namespace CogCaseOne.Services
             Console.WriteLine($"Incident with ID {incidentId} updated successfully."); // confirm for user in console
         }
 
-        // Method for deleting incident using specific incident ID
+        /// <summary>
+        /// Deletes incident using specific incident ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="incidentId">ID of incident to delete</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task DeleteIncident(HttpClient httpClient, string incidentId)
         {
             var url = $"{Program.Scope}incidents({incidentId})"; // construct URL for specific incident

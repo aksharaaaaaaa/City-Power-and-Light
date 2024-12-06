@@ -34,5 +34,14 @@ namespace CogCaseOne.Models
 
         [JsonPropertyName("statuscode")]
         public int StatusCode { get; set; }
+
+        [JsonPropertyName("prioritycode")]
+        public int PriorityCode { get; set; }
+
+        [JsonPropertyName("createdon")]
+        public string CreatedOn { get; set; }
+
+        [JsonPropertyName("customerid_account")]
+        public Account CustomerAccount { get; set; }
     }
 }

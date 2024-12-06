@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using CogCaseOne.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CogCaseOne.Models
 {
@@ -25,5 +27,14 @@ namespace CogCaseOne.Models
 
         [JsonPropertyName("telephone1")]
         public string Phone { get; set; }
+
+        [JsonPropertyName("address1_city")]
+        public string City { get; set; }
+
+        [JsonPropertyName("_primarycontactid_value")]
+        public string PrimaryContactId { get; set; }
+
+        [JsonPropertyName("primarycontactid")]
+        public Contact PrimaryContact { get; set; }
     }
 }

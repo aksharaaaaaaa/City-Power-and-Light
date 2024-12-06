@@ -11,8 +11,15 @@ namespace CogCaseOne.Services
 {
     public class ContactApiService
     {
-        // Method for creating new contact in contacts table
-        // Returns new contact's contact ID
+        /// <summary>
+        /// Creates new contact in contacts table.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="firstName">First name of contact</param>
+        /// <param name="lastName">Last name of contact</param>
+        /// <param name="email">Email address of contact</param>
+        /// <param name="token">Authorisation token</param>
+        /// <returns>ID of newly created contact.</returns>
         public static async Task<string> CreateContact(HttpClient httpClient, string firstName, string lastName, string email, string token)
         {
             var url = $"{Program.Scope}contacts"; // construct URL for contacts table
@@ -26,7 +33,7 @@ namespace CogCaseOne.Services
             };
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = Program.CreateJsonContent(payload) // serialise payload into JSON
+                Content = UtilityHelper.CreateJsonContent(payload) // serialise payload into JSON
             };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
@@ -39,7 +46,13 @@ namespace CogCaseOne.Services
         }
 
 
-        // Method for getting contact details using specific contact ID
+        /// <summary>
+        /// Retrieves contact details using specific contact ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="contactId">ID of contact to retrieve</param>
+        /// <returns>Formatted contact details as string.</returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task<string> GetContactById(HttpClient httpClient, string contactId)
         {
             var url = $"{Program.Scope}contacts({contactId})"; // construct URL for specific contact
@@ -59,11 +72,16 @@ namespace CogCaseOne.Services
             var contact = JsonSerializer.Deserialize<Contact>(responseBody); // deserialise JSON response into Contact object
 
             // use helper method to format information of contact
-            return Program.FormatInfo(contact);
+            return UtilityHelper.FormatInfo(contact);
         }
 
-        // Method for getting all contacts in contacts table
-        // Returns List of Contact objects
+        /// <summary>
+        /// Retrieves all contacts in contacts table.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <returns>List of contacts</returns>
+        /// <exception cref="HttpRequestException"></exception>
+        /// <exception cref="Exception"></exception>
         public static async Task<List<Contact>> GetAllContacts(HttpClient httpClient)
         {
             var url = $"{Program.Scope}contacts"; // construct URL for contacts table
@@ -95,7 +113,15 @@ namespace CogCaseOne.Services
             return contactResponse.Value;
         }
 
-        // Method for updating contact using specific contact ID
+        /// <summary>
+        /// Updates contact using specific contact ID
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="contactId">ID of contact to update</param>
+        /// <param name="newEmail">New email address for contact</param>
+        /// <param name="token">Authorisation token</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task UpdateContact(HttpClient httpClient, string contactId, string newEmail, string token)
         {
             var url = $"{Program.Scope}contacts({contactId})"; // construct URL for specific contact
@@ -108,7 +134,7 @@ namespace CogCaseOne.Services
 
             var request = new HttpRequestMessage(HttpMethod.Patch, url) 
             {
-                Content = Program.CreateJsonContent(payload) // serialise payload into JSON
+                Content = UtilityHelper.CreateJsonContent(payload) // serialise payload into JSON
             };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
@@ -124,7 +150,13 @@ namespace CogCaseOne.Services
             Console.WriteLine($"Contact with ID {contactId} updated successfully."); // confirm for user in console
         }
 
-        // Method for deleting contact with specific contact ID
+        /// <summary>
+        /// Deletes contact using specific contact ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="contactId">ID of contact to delete</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task DeleteContact(HttpClient httpClient, string contactId)
         {
             var url = $"{Program.Scope}contacts({contactId})"; // construct URL for specific contact
@@ -139,5 +171,6 @@ namespace CogCaseOne.Services
             }
             Console.WriteLine($"Contact with ID {contactId} deleted successfully."); // confirm for user in console
         }
+
     }
 }

@@ -1,19 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CogCaseOne.Models;
+using Newtonsoft.Json.Linq;
 
 namespace CogCaseOne.Services
 {
 
     public class AccountApiService
     {
-        // Method for creating a new account in accounts table
-        // Returns new account's account ID
+        /// <summary>
+        /// Creates new account in accounts table.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="name">Name of account</param>
+        /// <param name="email">Email of account</param>
+        /// <param name="phone">Phone number of account</param>
+        /// <param name="token">Authorisation token</param>
+        /// <returns>ID of newly created account</returns>
         public static async Task<string> CreateAccount(HttpClient httpClient, string name, string email, string phone, string token) 
         {
             var url = $"{Program.Scope}accounts"; // constructs URL for accounts table
@@ -27,7 +36,7 @@ namespace CogCaseOne.Services
             };
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = Program.CreateJsonContent(payload) // serialise payload into JSON
+                Content = UtilityHelper.CreateJsonContent(payload) // serialise payload into JSON
             };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
@@ -39,10 +48,16 @@ namespace CogCaseOne.Services
             return response.Headers.Location.ToString().Split('(')[1].TrimEnd(')');
         }
 
-        // Method for getting account details using specific account ID
+        /// <summary>
+        /// Retrieves account details using specific account ID
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="accountId">ID of account to retrieve</param>
+        /// <returns>Formatted account details as string.</returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task<string> GetAccountById(HttpClient httpClient, string accountId) 
         {
-            var url = $"{Program.Scope}accounts({accountId})"; // constructs URL to get specific account
+            var url = $"{Program.Scope}accounts({accountId})?$expand=primarycontactid($select=fullname)"; // constructs URL to get specific account
 
             var response = await httpClient.GetAsync(url); // send GET request
 
@@ -59,13 +74,19 @@ namespace CogCaseOne.Services
             var account = JsonSerializer.Deserialize<Account>(responseBody); // deserialise JSON response into Account object
 
             // use helper method to format information of account
-            return Program.FormatInfo(account);
+            return UtilityHelper.FormatInfo(account);
         }
 
-        // Method to display all accounts in accounts table
+        /// <summary>
+        /// Retrieves all accounts in accounts table.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <returns>List of all accounts.</returns>
+        /// <exception cref="HttpRequestException"></exception>
+        /// <exception cref="Exception"></exception>
         public static async Task<List<Account>> GetAllAccounts(HttpClient httpClient)
         {
-            var url = $"{Program.Scope}accounts"; // constructs URL for accounts table
+            var url = $"{Program.Scope}accounts?$expand=primarycontactid($select=fullname)"; // constructs URL for accounts table
             var response = await httpClient.GetAsync(url); // send GET request
 
             // Log error details if request is unsuccessful
@@ -95,7 +116,16 @@ namespace CogCaseOne.Services
             return accountResponse.Value;
         }
 
-        // Method for updating account using specific account ID
+        /// <summary>
+        /// Updates account using specific account ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="accountId">ID of account to update</param>
+        /// <param name="newEmail">New email address for account</param>
+        /// <param name="newPhone">New phone number for account</param>
+        /// <param name="token">Authorisation token</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task UpdateAccount(HttpClient httpClient, string accountId, string newEmail, string newPhone, string token)
         {
             var url = $"{Program.Scope}accounts({accountId})"; // constructs URL for specific account
@@ -109,7 +139,44 @@ namespace CogCaseOne.Services
 
             var request = new HttpRequestMessage(HttpMethod.Patch, url)
             {
-                Content = Program.CreateJsonContent(payload) // serialises payload into JSON 
+                Content = UtilityHelper.CreateJsonContent(payload) // serialises payload into JSON 
+            };
+
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
+            var response = await httpClient.SendAsync(request); // send PATCH request
+
+            // Log error details if request is unsuccessful
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {response.StatusCode}, Content: {errorContent}");
+                throw new HttpRequestException($"Failed to update account. Status code: {response.StatusCode}");
+            }
+            Console.WriteLine($"Account with ID {accountId} updated successfully."); // confirm for user in console
+        }
+        
+        /// <summary>
+        /// Updates a specified account to link a specific contact as primary contact.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="accountId">ID of account to update</param>
+        /// <param name="contactId">ID of contact to set as primary contact for account</param>
+        /// <param name="token">Authorisation token</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
+        public static async Task UpdateAccountContact(HttpClient httpClient, string accountId, string contactId, string token)
+        {
+            var url = $"{Program.Scope}accounts({accountId})"; // constructs URL for specific account
+
+            // set details to update
+            var payload = new Dictionary<string, object>
+            {
+                {"primarycontactid@odata.bind", $"/contacts({contactId})" }
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Patch, url)
+            {
+                Content = UtilityHelper.CreateJsonContent(payload) // serialises payload into JSON 
             };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); // add authorisation headers
@@ -125,7 +192,13 @@ namespace CogCaseOne.Services
             Console.WriteLine($"Account with ID {accountId} updated successfully."); // confirm for user in console
         }
 
-        // Method for deleting account using specific account ID
+        /// <summary>
+        /// Deletes account using specific account ID.
+        /// </summary>
+        /// <param name="httpClient">Http client used for API requests</param>
+        /// <param name="accountId">ID of account to delete</param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public static async Task DeleteAccount(HttpClient httpClient, string accountId) 
         {
             var url = $"{Program.Scope}accounts({accountId})"; // constructs URL for specific account
@@ -140,5 +213,6 @@ namespace CogCaseOne.Services
             }
             Console.WriteLine($"Account with ID {accountId} deleted successfully."); // confirm for user in console
         }
+
     }
 }

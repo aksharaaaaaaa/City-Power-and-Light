@@ -12,6 +12,8 @@ using System.Text.Json;
 using Microsoft.Xrm.Sdk;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using CogCaseOne.Models;
+using System.Security.Principal;
 
 namespace CogCaseOne.Models
 {
@@ -36,5 +38,13 @@ namespace CogCaseOne.Models
 
         [JsonPropertyName("contactid")]
         public Guid ContactId { get; set; }
+
+        [JsonPropertyName("company")]
+        public string Company { get; set; }
+
+        [JsonPropertyName("telephone1")]
+        public string Phone { get; set; }
+
+
     }
 }
