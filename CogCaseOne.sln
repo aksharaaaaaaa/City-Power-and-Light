@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CogCaseOne", "CogCaseOne\CogCaseOne.csproj", "{5F0DCE50-08D5-4C8A-98D4-0C65545942F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CogCaseOneTests", "CogCaseOneTests\CogCaseOneTests.csproj", "{E9B94E6B-D3B0-4DF0-A31D-A7ABB275014D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{5F0DCE50-08D5-4C8A-98D4-0C65545942F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F0DCE50-08D5-4C8A-98D4-0C65545942F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F0DCE50-08D5-4C8A-98D4-0C65545942F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9B94E6B-D3B0-4DF0-A31D-A7ABB275014D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9B94E6B-D3B0-4DF0-A31D-A7ABB275014D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9B94E6B-D3B0-4DF0-A31D-A7ABB275014D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9B94E6B-D3B0-4DF0-A31D-A7ABB275014D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
