@@ -9,7 +9,8 @@ using CogCaseOne.Services;
 public class AccountApiServiceTests
 {
     /// <summary>
-    /// 
+    /// Tests GetAccountById method to check it returns account data correctly when provided with a valid account ID.
+    /// Uses a mock HttpClient to simulate the Http response from the API.
     /// </summary>
     /// <returns></returns>
     [Fact]
